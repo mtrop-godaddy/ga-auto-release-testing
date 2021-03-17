@@ -68,12 +68,14 @@ jobs:
           echo "::set-output name=version::${VERSION}"
 
       - name: Checkout
+        if: ${{ steps.release_type.outputs.automatic }}
         uses: actions/checkout@v2
         # Needed to get all the tag information
         with:
           fetch-depth: 0
 
       - name: Get next tag or 0.0.1 if no tags exist
+        if: ${{ steps.release_type.outputs.automatic }}
         id: next_tag
         run: |
           VERSION_TO_INCREMENT=${{ steps.get_version.outputs.version }}
@@ -106,6 +108,7 @@ jobs:
           echo "::set-output name=value::${NEXT_TAG}"
 
       - name: Actually create a release
+        if: ${{ steps.release_type.outputs.automatic }}
         id: create_release
         uses: actions/create-release@v1
         env:
