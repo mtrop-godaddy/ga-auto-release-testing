@@ -1,3 +1,4 @@
 Release minor version
 for i in {1..5}; do echo "major test $i" >> .tmp; git commit -a -m "major test $i"; done
 major version test 1
+major version test 2
