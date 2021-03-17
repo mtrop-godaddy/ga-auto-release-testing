@@ -8,7 +8,7 @@ It won't be executed for every commit in a `push`, you can for example merge a P
 branch which contains 10+ commits and only one release will be created for all of them.
 
 The workflow will increment the `patch` version by default if none of the commit messages being pushed
-into the `main` branch contains version specific annotations.
+into the `main` branch contain a version specific annotations.
 
 Supported annotations are:
 * `[release-manual]` - will skip the tagging and release creation, the release must then be created
@@ -24,5 +24,5 @@ multi-commit merge.
 
 The current workflow has some issues if multiple people merge changes at the same time. The workflows
 are started concurrently so they can fail due to race conditions on obtaining the previous release
-tag. Can be addressed via a new GitHub Action which implement a queueing system. Should not be a
+tag. Can be addressed via a new GitHub Action which implements a queueing system. Should not be a
 problem initially though.
