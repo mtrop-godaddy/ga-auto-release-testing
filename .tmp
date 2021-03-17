@@ -1,1 +1,13 @@
 Release minor version
+for i in {1..5}; do echo "major test $i" >> .tmp; git commit -a -m "major test $i"; done
+major version test 1
+major version test 2
+major version test 3
+major version test 4
+major version test 5
+Major version annotation
+major version test 6
+major version test 7
+major version test 8
+major version test 9
+major version test 10
