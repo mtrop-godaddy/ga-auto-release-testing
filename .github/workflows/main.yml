@@ -68,7 +68,7 @@ jobs:
       - name: Get next tag or 0.0.1 if no tags exist
         id: next_tag
         run: |
-          VERSION_TO_INCREMENT=${{ steps.release_type.outputs.version }}
+          VERSION_TO_INCREMENT=${{ steps.get_version.outputs.version }}
           PREVIOUS_TAG=$(git describe --abbrev=0 --tags --always $(git rev-list --tags --max-count=1) | sed s/^v//g)
 
           echo "Previous tag: ${PREVIOUS_TAG}"
