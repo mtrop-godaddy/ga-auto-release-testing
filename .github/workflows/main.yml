@@ -12,7 +12,7 @@ jobs:
       - name: Collect all commit messages
         id: collect
         run: |
-          COMMIT_MESSAGES=${{ join(github.event.commits.*.message, ',') }}
+          COMMIT_MESSAGES="${{ join(github.event.commits.*.message, ',') }}"
 
           # Need to strip out new lines
           COMMIT_MESSAGES="${COMMIT_MESSAGES//'%'/'%25'}"
