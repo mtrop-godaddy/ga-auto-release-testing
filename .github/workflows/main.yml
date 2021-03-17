@@ -1,0 +1,112 @@
+name: Test automatic GitHub release creation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  do-everything-because-spinning-up-jobs-is-slow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect all commit messages
+        id: collect
+        run: echo "::set-output name=commit_messages::${{ join(github.event.commits.*.message, '\n') }}"
+
+      - name: Don't create a release?
+        id: release_type
+        # Note that there's a negation in the expression
+        run: echo "::set-output name=automatic::${{ !contains(steps.collect.outputs.commit_messages, '[release-manual]') }}"
+
+      - name: Increment patch version?
+        id: patch_step
+        run: echo "::set-output name=increment::${{ contains(steps.collect.outputs.commit_messages, '[release-patch]') }}"
+
+      - name: Increment minor version?
+        id: minor_step
+        run: echo "::set-output name=increment::${{ contains(steps.collect.outputs.commit_messages, '[release-minor]') }}"
+
+      - name: Increment major version?
+        id: major_step
+        run: echo "::set-output name=increment::${{ contains(steps.collect.outputs.commit_messages, '[release-major]') }}"
+
+      - name: Figure out which version to increment
+        if: ${{ steps.release_type.outputs.automatic }}
+        id: get_version
+        run: |
+          # We check for the patch flag first because all the other higher level flags override it
+          if ${{ steps.patch_step.outputs.increment }}
+          then
+            VERSION='patch'
+          fi
+          # Overrides patch if set
+          if ${{ steps.minor_step.outputs.increment }}
+          then
+            VERSION='minor'
+          fi
+          # Overrides patch or minor if set
+          if ${{ steps.major_step.outputs.increment }}
+          then
+            VERSION='major'
+          fi
+          # If none of the flags were set then assume that we're incrementing patch
+          if [ -z ${VERSION} ]
+          then
+            VERSION='patch'
+          fi
+
+          echo "Version number to increment: ${VERSION}"
+
+          echo "::set-output name=version::${VERSION}"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        # Needed to get all the tag information
+        with:
+          fetch-depth: 0
+
+      - name: Get next tag or 0.0.1 if no tags exist
+        id: next_tag
+        run: |
+          VERSION_TO_INCREMENT=${{ steps.release_type.outputs.version }}
+          PREVIOUS_TAG=$(git describe --abbrev=0 --tags --always $(git rev-list --tags --max-count=1) | sed s/^v//g)
+
+          echo "Previous tag: ${PREVIOUS_TAG}"
+
+          if [ -z ${PREVIOUS_TAG} ]
+          then
+            NEXT_TAG="v0.0.1"
+          else
+            case "${VERSION_TO_INCREMENT}" in
+              patch)
+                NEXT_TAG=$(echo ${PREVIOUS_TAG} | awk -F '.' '{ print "v" $1 "." $2 "." $3+1 }')
+                ;;
+              minor)
+                NEXT_TAG=$(echo ${PREVIOUS_TAG} | awk -F '.' '{ print "v" $1 "." $2+1 ".0" }')
+                ;;
+              major)
+                NEXT_TAG=$(echo ${PREVIOUS_TAG} | awk -F '.' '{ print "v" $1+1 ".0.0" }')
+                ;;
+              *)
+                echo "Bad increment version type received: ${VERSION_TO_INCREMENT}"
+                exit 1
+            esac
+          fi
+
+          echo "New tag: ${NEXT_TAG}"
+
+          echo "::set-output name=value::${NEXT_TAG}"
+
+      - name: Actually create a release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          # Provided by the GitHub context, no need to set up anything
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Git tag that will be created
+          tag_name: ${{ steps.next_tag.outputs.value }}
+          # This will be displayed in the release message
+          release_name: Release ${{ steps.next_tag.outputs.value }}
+          draft: false
+          prerelease: false
