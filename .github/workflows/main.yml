@@ -11,9 +11,17 @@ jobs:
     steps:
       - name: Collect all commit messages
         id: collect
-        run: echo "::set-output name=commit_messages::${{ join(github.event.commits.*.message, '\n') }}"
+        run: |
+          COMMIT_MESSAGES=${{ join(github.event.commits.*.message, ',') }}
 
-      - name: Don't create a release?
+          # Need to strip out new lines
+          COMMIT_MESSAGES="${COMMIT_MESSAGES//'%'/'%25'}"
+          COMMIT_MESSAGES="${COMMIT_MESSAGES//$'\n'/'%0A'}"
+          COMMIT_MESSAGES="${COMMIT_MESSAGES//$'\r'/'%0D'}"
+
+          echo "::set-output name=commit_messages::${COMMIT_MESSAGES}"
+
+      - name: Automatically create a release?
         id: release_type
         # Note that there's a negation in the expression
         run: echo "::set-output name=automatic::${{ !contains(steps.collect.outputs.commit_messages, '[release-manual]') }}"
