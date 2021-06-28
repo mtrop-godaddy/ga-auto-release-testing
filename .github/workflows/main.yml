@@ -11,6 +11,7 @@ jobs:
     env:
       asd_test: 123
       asd_stest: "abc"
+#      main_test: 123
     steps:
       - name: Collect all commit messages
         id: collect
