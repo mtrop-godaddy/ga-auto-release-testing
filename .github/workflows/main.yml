@@ -13,6 +13,10 @@ jobs:
       asd_stest: "abc"
 #      main_test: 123
     steps:
+      #- name: Get environment name
+      #  run: |
+      #    BRANCH=${GITHUB_REF##*/}
+      #    echo "TARGET_ENV=${BRANCH}" >> $GITHUB_ENV
       - name: Collect all commit messages
         id: collect
         run: |
@@ -25,6 +29,8 @@ jobs:
           
           BRANCH=${GITHUB_REF##*/}
           echo "TARGET_ENV=${BRANCH}" >> $GITHUB_ENV
+          
+          echo "TEST_ID=${{ env[format('{0}_test', $BRANCH)] }}" >> $GITHUB_ENV
 
           echo "::set-output name=commit_messages::${COMMIT_MESSAGES}"
 
@@ -73,6 +79,7 @@ jobs:
           echo "Test 0: ${{ env.TARGET_ENV }}"
           echo "Test 1: ${{ env[format('{0}_test', env.TARGET_ENV)] }}"
           echo "Test 2: ${{ env[format('{0}_stest', env.TARGET_ENV)] }}"
+          echo "Test 3: ${{ env.TEST_ID }}"
 
           echo "Version number to increment: ${VERSION}"
 
