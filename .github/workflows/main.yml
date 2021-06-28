@@ -67,7 +67,7 @@ jobs:
           fi
 
           BRANCH=${GITHUB_REF##*/}
-          echo "TARGET_ENV=${BRANCH^^}" >> $GITHUB_ENV
+          echo "TARGET_ENV=${BRANCH}" >> $GITHUB_ENV
           
           echo "Test 0: ${{ env.TARGET_ENV }}"
           echo "Test 1: ${{ env[format('{0}_test', env.TARGET_ENV)] }}"
