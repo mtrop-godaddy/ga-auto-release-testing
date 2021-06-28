@@ -21,6 +21,9 @@ jobs:
           COMMIT_MESSAGES="${COMMIT_MESSAGES//'%'/'%25'}"
           COMMIT_MESSAGES="${COMMIT_MESSAGES//$'\n'/'%0A'}"
           COMMIT_MESSAGES="${COMMIT_MESSAGES//$'\r'/'%0D'}"
+          
+          BRANCH=${GITHUB_REF##*/}
+          echo "TARGET_ENV=${BRANCH}" >> $GITHUB_ENV
 
           echo "::set-output name=commit_messages::${COMMIT_MESSAGES}"
 
@@ -65,9 +68,6 @@ jobs:
           then
             VERSION='patch'
           fi
-
-          BRANCH=${GITHUB_REF##*/}
-          echo "TARGET_ENV=${BRANCH}" >> $GITHUB_ENV
           
           echo "Test 0: ${{ env.TARGET_ENV }}"
           echo "Test 1: ${{ env[format('{0}_test', env.TARGET_ENV)] }}"
