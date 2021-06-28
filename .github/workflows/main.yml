@@ -3,11 +3,14 @@ name: Test automatic GitHub release creation
 on:
   push:
     branches:
-      - main
+      - asd
 
 jobs:
   do-everything-because-spinning-up-jobs-is-slow:
     runs-on: ubuntu-latest
+    env:
+      asd_test: 123
+      asd_stest: "abc"
     steps:
       - name: Collect all commit messages
         id: collect
@@ -62,6 +65,12 @@ jobs:
           then
             VERSION='patch'
           fi
+
+          BRANCH=${GITHUB_REF##*/}
+          echo "TARGET_ENV=${BRANCH^^}" >> $GITHUB_ENV
+          
+          echo "Test 1: ${{ env[format('{0}_test', env.TARGET_ENV)] }}"
+          echo "Test 2: ${{ env[format('{0}_stest', env.TARGET_ENV)] }}"
 
           echo "Version number to increment: ${VERSION}"
 
